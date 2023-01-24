@@ -62,7 +62,6 @@ export class Layout implements LayoutAttributes {
 	public setOrientation(orientation: Orientation): void {
 		this.orientation = orientation;
 	}
-
 }
 
 export default Layout;
