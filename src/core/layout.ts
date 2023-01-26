@@ -1,4 +1,4 @@
-import { Vector2 } from "./vector";
+import { Vector2 } from "./utils/vector";
 
 const sqrt3 = Math.sqrt(3);
 
@@ -17,14 +17,11 @@ interface Orientation {
 interface LayoutAttributes {
 	orientation: Orientation;
 	size: Vector2;
-	minSize: Vector2;
-	maxSize: Vector2;
 	origin: Vector2;
-	minOrigin: Vector2;
-	maxOrigin: Vector2;
+	changed: boolean;
 }
 
-export const pointyOrientation: Orientation = {
+export const orientation: Orientation = {
 	f0: sqrt3,
 	f1: sqrt3 / 2.0,
 	f2: 0.0,
@@ -40,10 +37,7 @@ export class Layout implements LayoutAttributes {
 	public orientation: Orientation;
 	public size: Vector2;
 	public origin: Vector2;
-	public minSize: Vector2 = new Vector2(0, 0);
-	public maxSize: Vector2 = new Vector2(0, 0);
-	public minOrigin: Vector2 = new Vector2(0, 0);
-	public maxOrigin: Vector2 = new Vector2(0, 0);
+	public changed: boolean = true;
 
 	constructor(orientation: Orientation, size: Vector2, origin: Vector2) {
 		this.orientation = orientation;
@@ -52,14 +46,17 @@ export class Layout implements LayoutAttributes {
 	}
 
 	public setOrigin(origin: Vector2): void {
+		this.changed = true;
 		this.origin = origin;
 	}
 
 	public setSize(size: Vector2): void {
+		this.changed = true;
 		this.size = size;
 	}
 
 	public setOrientation(orientation: Orientation): void {
+		this.changed = true;
 		this.orientation = orientation;
 	}
 }

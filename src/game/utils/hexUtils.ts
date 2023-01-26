@@ -1,6 +1,6 @@
-import Layout from "../../core/layout";
+import Layout, { orientation } from "../../core/layout";
 import Hex, { hexagons, HexCoordinates } from "../hex";
-import { Vector2, Vector3 } from "../../core/vector";
+import { Vector2, Vector3 } from "../../core/utils/vector";
 
 const PI = Math.PI;
 
@@ -14,12 +14,6 @@ export const directions: HexCoordinates[] = [
 ];
 
 export function getOrCreateHexagon(cords: HexCoordinates): Hex {
-	if (hexagons.length === 0) {
-		const hex = new Hex(cords.q, cords.r, cords.s);
-		hexagons.push(hex);
-		return hex;
-	}
-
 	let hex = getHexagonByCords(cords);
 	if (hex !== undefined) {
 		return hex;
@@ -151,15 +145,57 @@ export function pixelToHex(layout: Layout, p: Vector2): Hex {
 	const pt = new Vector2((p.x - origin.x) / size.x, (p.y - origin.y) / size.y);
 	const q = M.b0 * pt.x + M.b1 * pt.y;
 	const r = M.b2 * pt.x + M.b3 * pt.y;
-	return getOrCreateHexagon({ q: q, r: r, s: -q - r });
+	return roundHex({ q: q, r: r, s: -q - r });
 }
 
-export function hexCornerOffset(layout: Layout, corner: number): Vector2 {
-	const M = layout.orientation;
-	const size = layout.size;
-	const angle = (2.0 * PI * (M.startAngle - corner)) / 6;
-	return new Vector2(size.x * Math.cos(angle), size.y * Math.sin(angle));
+export function roundHex(hex: Hex | HexCoordinates): Hex {
+	let q = Math.round(hex.q);
+	let r = Math.round(hex.r);
+	let s = Math.round(hex.s);
+	const qDiff = Math.abs(q - hex.q);
+	const rDiff = Math.abs(r - hex.r);
+	const sDiff = Math.abs(s - hex.s);
+	if (qDiff > rDiff && qDiff > sDiff) {
+		q = -r - s;
+	} else if (rDiff > sDiff) {
+		r = -q - s;
+	} else {
+		s = -q - r;
+	}
+	return getOrCreateHexagon({ q: q, r: r, s: s });
 }
+
+/** Preload Angles Data for performance.
+ 	Because we are using a lot of Math.cos and Math.sin and they are expensive operations, we precalculate them and store them in an array.
+ 	We also only use the Pointy Orientation, so we dont need to recalculate them on the fly.
+	##################################################################################################*/
+export const angles = [
+	(2.0 * PI * (orientation.startAngle - 0)) / 6,
+	(2.0 * PI * (orientation.startAngle - 1)) / 6,
+	(2.0 * PI * (orientation.startAngle - 2)) / 6,
+	(2.0 * PI * (orientation.startAngle - 3)) / 6,
+	(2.0 * PI * (orientation.startAngle - 4)) / 6,
+	(2.0 * PI * (orientation.startAngle - 5)) / 6,
+];
+
+export const anglesCosSin = [
+	new Vector2(Math.cos(angles[0]), Math.sin(angles[0])),
+	new Vector2(Math.cos(angles[1]), Math.sin(angles[1])),
+	new Vector2(Math.cos(angles[2]), Math.sin(angles[2])),
+	new Vector2(Math.cos(angles[3]), Math.sin(angles[3])),
+	new Vector2(Math.cos(angles[4]), Math.sin(angles[4])),
+	new Vector2(Math.cos(angles[5]), Math.sin(angles[5])),
+];
+
+export function hexCornerOffset(layout: Layout, corner: number): Vector2 {
+	const size = layout.size;
+	return new Vector2(
+		size.x * anglesCosSin[corner].x,
+		size.y * anglesCosSin[corner].y
+	);
+}
+
+/** ################################################################################################# */
 
 export function polygonCorners(
 	layout: Layout,
@@ -172,4 +208,16 @@ export function polygonCorners(
 		corners.push(new Vector2(center.x + offset.x, center.y + offset.y));
 	}
 	return corners;
+}
+
+export function hexagonMap(mapRadius: number): Hex[] {
+	let hexas: Hex[] = [];
+	for (let q = -mapRadius; q <= mapRadius; q++) {
+		let r1 = Math.max(-mapRadius, -q - mapRadius);
+		let r2 = Math.min(mapRadius, -q + mapRadius);
+		for (let r = r1; r <= r2; r++) {
+			hexas.push(new Hex(q, r, -q - r));
+		}
+	}
+	return hexas;
 }
