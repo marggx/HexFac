@@ -1,8 +1,8 @@
-import Layout, { orientation } from "../../core/layout";
-import Hex, { hexagons, HexCoordinates } from "../hex";
-import { Vector2, Vector3 } from "../../core/utils/vector";
+import Layout from "../../core/models/layout";
+import Hex, { HexCoordinates } from "../models/hex";
+import { Vector2 } from "../../core/models/vector";
 
-const PI = Math.PI;
+let hexagons: Hex[] = [];
 
 export const directions: HexCoordinates[] = [
     { q: 1, r: 0, s: -1 },
@@ -13,15 +13,17 @@ export const directions: HexCoordinates[] = [
     { q: 0, r: 1, s: -1 },
 ];
 
-export function getOrCreateHexagon(cords: HexCoordinates): Hex {
+export function getOrCreateHexagon(cords: HexCoordinates, create: Boolean = false): Hex | undefined {
     let hex = getHexagonByCords(cords);
     if (hex !== undefined) {
         return hex;
     }
 
-    hex = new Hex(cords.q, cords.r, cords.s);
-    hexagons.push(hex);
-    return hex;
+    if (create) {
+        return new Hex(cords.q, cords.r, cords.s);
+    }
+
+    return undefined;
 }
 
 export function getHexagon(id: string): Hex | undefined {
@@ -41,45 +43,39 @@ export function getHexagons(): Hex[] {
 export function getHexagonByCords(cords: HexCoordinates): Hex | undefined {
     for (let i = 0; i < hexagons.length; i++) {
         const hex = hexagons[i];
-        if (equal(hex, cords)) {
+        if (equals(hex, cords)) {
             return hex;
         }
     }
     return undefined;
 }
 
-export function axialToCube(hex: Hex): Vector3 {
-    const x = hex.q;
-    const z = hex.r;
-    const y = -x - z;
-    return new Vector3(x, y, z);
+export function axialToCube(axial: Vector2): HexCoordinates {
+    const q = axial.x;
+    const r = axial.y;
+    const s = -q - r;
+    return { q, r, s };
 }
 
-export function cubeToAxial(cube: Vector3): Vector2 {
-    const q = cube.x;
-    const r = cube.z;
-    return new Vector2(q, r);
+export function cubeToAxial(cube: HexCoordinates): Vector2 {
+    const x = cube.q;
+    const y = cube.r;
+    return new Vector2(x, y);
 }
 
 export function add(a: Hex | HexCoordinates, b: Hex | HexCoordinates): Hex {
-    return getOrCreateHexagon({ q: a.q + b.q, r: a.r + b.r, s: a.s + b.s });
+    return getOrCreateHexagon({ q: a.q + b.q, r: a.r + b.r, s: a.s + b.s }, true)!;
 }
 
-export function subtract(
-    a: Hex | HexCoordinates,
-    b: Hex | HexCoordinates
-): Hex {
-    return getOrCreateHexagon({ q: a.q - b.q, r: a.r - b.r, s: a.s - b.s });
+export function subtract(a: Hex | HexCoordinates, b: Hex | HexCoordinates): Hex {
+    return getOrCreateHexagon({ q: a.q - b.q, r: a.r - b.r, s: a.s - b.s }, true)!;
 }
 
 export function multiply(a: Hex | HexCoordinates, k: number): Hex {
-    return getOrCreateHexagon({ q: a.q * k, r: a.r * k, s: a.s * k });
+    return getOrCreateHexagon({ q: a.q * k, r: a.r * k, s: a.s * k }, true)!;
 }
 
-export function equal(
-    a: Hex | HexCoordinates,
-    b: Hex | HexCoordinates
-): boolean {
+export function equals(a: Hex | HexCoordinates, b: Hex | HexCoordinates): boolean {
     return a.q === b.q && a.r === b.r && a.s === b.s;
 }
 
@@ -87,26 +83,27 @@ export function length(a: Hex | HexCoordinates): number {
     return (Math.abs(a.q) + Math.abs(a.r) + Math.abs(a.s)) / 2;
 }
 
-export function distance(
-    a: Hex | HexCoordinates,
-    b: Hex | HexCoordinates
-): number {
+export function distance(a: Hex | HexCoordinates, b: Hex | HexCoordinates): number {
     return length(subtract(a, b));
 }
 
-export function neighbor(hex: Hex, direction: HexCoordinates | number): Hex {
+export function getNeighbor(hex: Hex, direction: HexCoordinates | number): Hex {
     if (typeof direction === "number") {
         direction = directions[direction];
     }
     return add(hex, direction);
 }
 
-export function neighbors(hex: Hex): Hex[] {
+export function getNeighbors(hex: Hex): Hex[] {
     let results: Hex[] = [];
     for (let i = 0; i < directions.length; i++) {
-        results.push(neighbor(hex, i));
+        results.push(getNeighbor(hex, i));
     }
     return results;
+}
+
+export function isNeighbor(a: Hex | HexCoordinates, b: Hex | HexCoordinates): boolean {
+    return distance(a, b) === 1;
 }
 
 export function ring(hex: Hex, radius: number): Hex[] {
@@ -115,7 +112,7 @@ export function ring(hex: Hex, radius: number): Hex[] {
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < radius; j++) {
             results.push(current);
-            current = neighbor(current, i);
+            current = getNeighbor(current, i);
         }
     }
     return results;
@@ -138,20 +135,17 @@ export function hexToPixel(layout: Layout, hex: Hex | HexCoordinates): Vector2 {
     return new Vector2(x + origin.x, y + origin.y);
 }
 
-export function pixelToHex(layout: Layout, p: Vector2): Hex {
+export function pixelToHex(layout: Layout, p: Vector2): Hex | undefined {
     const M = layout.orientation;
     const size = layout.size;
     const origin = layout.origin;
-    const pt = new Vector2(
-        (p.x - origin.x) / size.x,
-        (p.y - origin.y) / size.y
-    );
+    const pt = new Vector2((p.x - origin.x) / size.x, (p.y - origin.y) / size.y);
     const q = M.b0 * pt.x + M.b1 * pt.y;
     const r = M.b2 * pt.x + M.b3 * pt.y;
     return roundHex({ q: q, r: r, s: -q - r });
 }
 
-export function roundHex(hex: Hex | HexCoordinates): Hex {
+export function roundHex(hex: Hex | HexCoordinates): Hex | undefined {
     let q = Math.round(hex.q);
     let r = Math.round(hex.r);
     let s = Math.round(hex.s);
@@ -165,45 +159,32 @@ export function roundHex(hex: Hex | HexCoordinates): Hex {
     } else {
         s = -q - r;
     }
-    return getOrCreateHexagon({ q: q, r: r, s: s });
+    return getOrCreateHexagon({ q: q, r: r, s: s })!;
 }
 
 /** Preload Angles Data for performance.
  	Because we are using a lot of Math.cos and Math.sin and they are expensive operations, we precalculate them and store them in an array.
  	We also only use the Pointy Orientation, so we dont need to recalculate them on the fly.
 	##################################################################################################*/
-export const angles = [
-    (2.0 * PI * (orientation.startAngle - 0)) / 6,
-    (2.0 * PI * (orientation.startAngle - 1)) / 6,
-    (2.0 * PI * (orientation.startAngle - 2)) / 6,
-    (2.0 * PI * (orientation.startAngle - 3)) / 6,
-    (2.0 * PI * (orientation.startAngle - 4)) / 6,
-    (2.0 * PI * (orientation.startAngle - 5)) / 6,
-];
+const PI2: number = Math.PI * 2;
 
 export const anglesCosSin = [
-    new Vector2(Math.cos(angles[0]), Math.sin(angles[0])),
-    new Vector2(Math.cos(angles[1]), Math.sin(angles[1])),
-    new Vector2(Math.cos(angles[2]), Math.sin(angles[2])),
-    new Vector2(Math.cos(angles[3]), Math.sin(angles[3])),
-    new Vector2(Math.cos(angles[4]), Math.sin(angles[4])),
-    new Vector2(Math.cos(angles[5]), Math.sin(angles[5])),
+    new Vector2(Math.cos((PI2 * 0.5) / 6), Math.sin((PI2 * 0.5) / 6)),
+    new Vector2(Math.cos((PI2 * -0.5) / 6), Math.sin((PI2 * -0.5) / 6)),
+    new Vector2(Math.cos((PI2 * -1.5) / 6), Math.sin((PI2 * -1.5) / 6)),
+    new Vector2(Math.cos((PI2 * -2.5) / 6), Math.sin((PI2 * -2.5) / 6)),
+    new Vector2(Math.cos((PI2 * -3.5) / 6), Math.sin((PI2 * -3.5) / 6)),
+    new Vector2(Math.cos((PI2 * -4.5) / 6), Math.sin((PI2 * -4.5) / 6)),
 ];
 
 export function hexCornerOffset(layout: Layout, corner: number): Vector2 {
     const size = layout.size;
-    return new Vector2(
-        size.x * anglesCosSin[corner].x,
-        size.y * anglesCosSin[corner].y
-    );
+    return new Vector2(size.x * anglesCosSin[corner].x, size.y * anglesCosSin[corner].y);
 }
 
 /** ################################################################################################# */
 
-export function polygonCorners(
-    layout: Layout,
-    hex: Hex | HexCoordinates
-): Vector2[] {
+export function polygonCorners(layout: Layout, hex: Hex | HexCoordinates): Vector2[] {
     const corners: Vector2[] = [];
     const center = hexToPixel(layout, hex);
     for (let i = 0; i < 6; i++) {
@@ -211,6 +192,17 @@ export function polygonCorners(
         corners.push(new Vector2(center.x + offset.x, center.y + offset.y));
     }
     return corners;
+}
+
+export function isHexInViewport(layout: Layout, hex: Hex | HexCoordinates): boolean {
+    const corners = polygonCorners(layout, hex);
+    for (let i = 0; i < corners.length; i++) {
+        if (layout.isVectorInViewport(corners[i])) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 export function hexagonMap(mapRadius: number): Hex[] {
@@ -222,5 +214,28 @@ export function hexagonMap(mapRadius: number): Hex[] {
             hexas.push(new Hex(q, r, -q - r));
         }
     }
+    hexagons = hexas;
     return hexas;
+}
+
+export function outlineHexGroup(layout: Layout, hexagons: Hex[]): [Vector2, Vector2][] {
+    let lines: [Vector2, Vector2][] = [];
+    for (let i = 0; i < hexagons.length; i++) {
+        let hex = hexagons[i];
+        let neighbors = getNeighbors(hex);
+
+        for (let j = 0; j < neighbors.length; j++) {
+            let neighbor = neighbors[j];
+
+            if (hexagons.indexOf(neighbor) === -1) {
+                let hexCenter = hexToPixel(layout, hex);
+                let offset = hexCornerOffset(layout, j);
+                let offset1 = hexCornerOffset(layout, (j + 1) % 6);
+                let p1 = new Vector2(hexCenter.x + offset.x, hexCenter.y + offset.y);
+                let p2 = new Vector2(hexCenter.x + offset1.x, hexCenter.y + offset1.y);
+                lines.push([p1, p2]);
+            }
+        }
+    }
+    return lines;
 }

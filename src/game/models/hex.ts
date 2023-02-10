@@ -27,6 +27,4 @@ export class Hex implements HexCoordinates, HexAttributes {
     }
 }
 
-export let hexagons: Hex[] = [];
-
 export default Hex;

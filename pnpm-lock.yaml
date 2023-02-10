@@ -1,8 +1,14 @@
 lockfileVersion: 5.4
 
 specifiers:
+  alea: ^1.0.1
+  simplex-noise: ^4.0.1
   typescript: ^4.9.3
   vite: ^4.0.0
+
+dependencies:
+  alea: 1.0.1
+  simplex-noise: 4.0.1
 
 devDependencies:
   typescript: 4.9.4
@@ -208,6 +214,10 @@ packages:
     dev: true
     optional: true
 
+  /alea/1.0.1:
+    resolution: {integrity: sha512-QU+wv+ziDXaMxRdsQg/aH7sVfWdhKps5YP97IIwFkHCsbDZA3k87JXoZ5/iuemf4ntytzIWeScrRpae8+lDrXA==}
+    dev: false
+
   /esbuild/0.16.17:
     resolution: {integrity: sha512-G8LEkV0XzDMNwXKgM0Jwu3nY3lSTwSGY6XbxM9cr9+s0T/qSV1q1JVPBGzm3dcjhCic9+emZDmMffkwgPeOeLg==}
     engines: {node: '>=12'}
@@ -302,6 +312,10 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
+
+  /simplex-noise/4.0.1:
+    resolution: {integrity: sha512-zl/+bdSqW7HJOQ0oDbxrNYaF4F5ik0i7M6YOYmEoIJNtg16NpvWaTTM1Y7oV/7T0jFljawLgYPS81Uu2rsfo1A==}
+    dev: false
 
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
