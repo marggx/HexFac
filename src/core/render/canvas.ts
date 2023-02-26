@@ -46,7 +46,12 @@ for (let i = 0; i < imgs.length; i++) {
     imgr.push(img);
 }
 
-export function drawPolygon(points: Vector2[], fillStyle: string | null, strokeStyle: string, lineWidth: number) {
+export function drawPolygon(
+    points: Vector2[],
+    fillStyle: string | null,
+    strokeStyle: string | null,
+    lineWidth: number
+) {
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
@@ -58,15 +63,21 @@ export function drawPolygon(points: Vector2[], fillStyle: string | null, strokeS
         ctx.fill();
     }
     ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = strokeStyle;
+    if (strokeStyle !== null) {
+        ctx.strokeStyle = strokeStyle;
+    }
+
     ctx.stroke();
 }
 
-export function drawImage(point: Vector2, x: number, y: number, img) {
-    let imgn = imgr[Math.floor(Math.abs(img) * 10)];
-    if (imgn.complete) {
-        ctx.drawImage(imgn, point.x - (sqrt3 * x) / 2, point.y - (2 * y) / 2, sqrt3 * x, 2 * y);
-    }
+export function drawText(text: string) {
+    ctx.font = "30px Arial";
+    ctx.fillText(text, 10, 50);
+}
+
+export function drawImage(point: Vector2, x: number, y: number, img: string) {
+    let imgn = imgr[imgs.indexOf(img)];
+    ctx.drawImage(imgn, point.x - (sqrt3 * x) / 2, point.y - (2 * y) / 2, sqrt3 * x, 2 * y);
 }
 
 export function drawLines(lines: [Vector2, Vector2][], strokeStyle: string, lineWidth: number) {
@@ -75,6 +86,8 @@ export function drawLines(lines: [Vector2, Vector2][], strokeStyle: string, line
         ctx.moveTo(lines[i][0].x, lines[i][0].y);
         ctx.lineTo(lines[i][1].x, lines[i][1].y);
     }
+    ctx.fillStyle = "blue";
+    ctx.fill();
     ctx.lineWidth = lineWidth;
     ctx.strokeStyle = strokeStyle;
     ctx.stroke();

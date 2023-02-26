@@ -1,25 +1,26 @@
-import { clearCanvas, drawImage, drawPolygon, resizeCanvas } from "./../../core/render/canvas";
-import { hexagonMap, hexToPixel, polygonCorners, isHexInViewport } from "./../../game/utils/hexUtils";
+import { clearCanvas, drawImage, drawLines, drawPolygon, drawText, resizeCanvas } from "./../../core/render/canvas";
 import Layout, { orientation } from "./../../core/models/layout";
-import { Vector2 } from "../../core/models/vector";
+import { Vector2, Vector2Attributes } from "../../core/models/vector";
 import { initialize } from "./../../game/core/events";
-import alea from "alea";
-import { createNoise2D } from "simplex-noise";
 import { getSetting, loadSettings } from "./settings";
+import LoadingScreen from "./loadingScreen";
+import HexagonMap from "../models/hexagonMap";
+import Hex from "../models/hex";
 
 export default class Game {
-    private initSteps: number = 15;
-    private step: number = 0;
     private layout: Layout;
-    private prng;
-    private hexas = hexagonMap(20);
-    private noise2D;
+    private hexMap = new HexagonMap(20);
     private secondsPassed: number = 0;
     private oldTimeStamp: number = 0;
+    private tapedHex: Hex | undefined = undefined;
+    private highlightedHex: Hex | undefined = undefined;
+    private tap: DOMHighResTimeStamp = 0;
 
     constructor() {
+        let loading = new LoadingScreen(15);
+
         loadSettings();
-        this.stepLoadingScreen(5, "Loading settings");
+        loading.stepLoadingScreen(5, "Loading settings");
         this.layout = new Layout(
             orientation,
             new Vector2(20, 20),
@@ -27,16 +28,13 @@ export default class Game {
             getSetting("layout.minSize")
         );
 
-        this.stepLoadingScreen(1, "Layout");
+        loading.stepLoadingScreen(1, "Layout");
 
-        this.prng = alea("HarryOuter");
-        this.noise2D = createNoise2D(this.prng);
+        loading.stepLoadingScreen(1, "noise");
 
-        this.stepLoadingScreen(1, "noise");
+        initialize({ game: this });
 
-        initialize({ layout: this.layout });
-
-        this.stepLoadingScreen(15, "start");
+        loading.stepLoadingScreen(15, "start");
 
         this.init();
     }
@@ -49,49 +47,75 @@ export default class Game {
         this.gameLoop(0);
     }
 
-    private draw() {
-        for (let i = 0; i < this.hexas.length; i++) {
-            if (isHexInViewport(this.layout, this.hexas[i])) {
-                drawImage(
-                    hexToPixel(this.layout, this.hexas[i]),
-                    this.layout.size.x,
-                    this.layout.size.y,
-                    this.noise2D(-this.hexas[i].q, this.hexas[i].r)
+    private draw(deltaTime) {
+        this.hexMap.draw(this.layout);
+        drawText("FPS: " + Math.round(1 / deltaTime));
+        if (this.highlightedHex) {
+            let ring = this.hexMap.range(this.highlightedHex, 1);
+            drawLines(this.hexMap.outlineHexGroup(this.layout, ring), "darkgreen", 2);
+            for (let hex of ring) {
+                drawPolygon(
+                    this.hexMap.polygonCorners(this.layout, hex),
+                    "rgba(0, 200, 0, 0.5)",
+                    "rgba(0, 0, 200, 0)",
+                    1
                 );
-                drawPolygon(polygonCorners(this.layout, this.hexas[i]), null, "darkgray", 1);
             }
+            drawPolygon(
+                this.hexMap.polygonCorners(this.layout, this.highlightedHex),
+                "rgba(0, 0, 200, 0.5)",
+                "rgba(0, 0, 200, 0)",
+                1
+            );
         }
     }
 
     public gameLoop(timeStamp: DOMHighResTimeStamp) {
         // Calculate how much time has passed
-        this.secondsPassed = Math.min(timeStamp - this.oldTimeStamp, 100) / 1000;
+        let deltaTime = Math.min(timeStamp - this.oldTimeStamp, 100) / 1000;
+
+        this.secondsPassed += deltaTime;
+        if (this.secondsPassed > 0.03) {
+            this.secondsPassed = 0.001;
+            clearCanvas();
+            this.draw(deltaTime);
+        }
+
         this.oldTimeStamp = timeStamp;
 
-        if (this.layout.changed) {
-            clearCanvas();
-
-            this.layout.changed = false;
-            this.draw();
-        }
-        window.requestAnimationFrame((t: DOMHighResTimeStamp) => this.gameLoop(t));
+        window.requestAnimationFrame((t) => this.gameLoop(t));
     }
 
-    private stepLoadingScreen(steps: number, nextStepText: string) {
-        if (this.step === 0) {
-            document.querySelector<HTMLDivElement>("#loadingProgress")!.max = this.initSteps;
+    public zoom(factor: Vector2) {
+        let hexAtCenter = this.hexMap.pixelToHex(this.layout, this.layout.center);
+        this.layout.size.add(factor);
+        if (hexAtCenter) {
+            let newPosition = this.hexMap.hexToPixel(this.layout, hexAtCenter);
+            this.layout.origin.add({
+                x: this.layout.center.x - newPosition.x,
+                y: this.layout.center.y - newPosition.y,
+            });
         }
-        this.step += steps;
+    }
 
-        if (this.step >= this.initSteps) {
-            const loadingScreen = document.querySelector<HTMLDivElement>("#loadingScreen")!;
-            loadingScreen.style.display = "none";
-            return;
-        }
+    public async tapDown(position: Vector2 | Vector2Attributes | undefined) {
+        this.tap = performance.now();
+        if (!position) return;
+        this.tapedHex = this.hexMap.pixelToHex(this.layout, position);
+    }
 
-        const loadingScreen = document.querySelector<HTMLDivElement>("#loadingText")!;
-        const loadingProgress = document.querySelector<HTMLDivElement>("#loadingProgress")!;
-        loadingProgress.value = this.step;
-        loadingScreen.innerHTML = nextStepText;
+    public async tapUp(position: Vector2 | Vector2Attributes | undefined) {
+        this.tap = 0;
+        if (!this.tapedHex) return;
+        this.highlightedHex = this.tapedHex;
+    }
+
+    public async tapMove(position: Vector2 | Vector2Attributes | undefined) {
+        if (!this.tap) return;
+        if (!position) return;
+        this.layout.origin.add({ x: position.x, y: position.y });
+
+        if (performance.now() - this.tap < 100) return;
+        this.tapedHex = undefined;
     }
 }

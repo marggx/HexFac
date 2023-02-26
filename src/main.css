@@ -5,10 +5,28 @@ canvas {
 body {
     overflow: hidden;
     touch-action: none;
+    width: max-content;
 }
 
 .hidden {
     display: none !important;
+}
+
+.footer {
+    position: absolute;
+    margin: auto;
+    bottom: 1svh;
+    left: 0;
+    right: 0;
+    width: 80svw;
+    height: 10svh;
+    background-color: #323232;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border-radius: 12px;
 }
 
 #loadingScreen {
