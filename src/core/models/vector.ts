@@ -64,6 +64,22 @@ export class Vector2 implements Vector2Attributes {
     public toString(): string {
         return `(${this.x}, ${this.y})`;
     }
+
+    public toJSON() {
+        let returnStrg = {
+            x: this.x,
+            y: this.y,
+        };
+        if (this.maxX) {
+            //@ts-ignore
+            returnStrg.max = this.maxX;
+        }
+        if (this.minX) {
+            //@ts-ignore
+            returnStrg.min = this.minX;
+        }
+        return returnStrg;
+    }
 }
 
 export class Vector3 {

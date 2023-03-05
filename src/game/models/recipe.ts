@@ -1,4 +1,4 @@
-import { Item } from "./iterm";
+import { Item } from "./item";
 
 export interface RecipeAttributes {
     id: string;

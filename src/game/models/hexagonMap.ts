@@ -1,10 +1,11 @@
 import alea from "alea";
 import { createNoise2D } from "simplex-noise";
-import Layout from "../../core/models/layout";
+
 import { Vector2, Vector2Attributes } from "../../core/models/vector";
+import Layout from "../core/layout";
+import { drawImage, drawPolygon } from "./../../core/render/canvas";
 import { Building } from "./building";
 import Hex, { HexCoordinates } from "./hex";
-import { clearCanvas, drawImage, drawLines, drawPolygon, resizeCanvas } from "./../../core/render/canvas";
 
 let imgs = [
     "./../../../src/img/grass_12.png",
@@ -21,6 +22,7 @@ let imgs = [
 
 export class HexagonMap {
     private hexagons: Building[] = [];
+    private seed: string;
     private directions: HexCoordinates[] = [
         { q: 1, r: 0, s: -1 },
         { q: 1, r: -1, s: 0 },
@@ -40,8 +42,9 @@ export class HexagonMap {
         new Vector2(Math.cos((this.PI2 * -4.5) / 6), Math.sin((this.PI2 * -4.5) / 6)),
     ];
 
-    constructor(radius: number) {
-        let prng = alea("HarryPotter");
+    constructor(radius: number, seed: string = "HarryPotter") {
+        this.seed = seed;
+        let prng = alea(this.seed);
         let noise2D = createNoise2D(prng);
         for (let q = -radius; q <= radius; q++) {
             const r1 = Math.max(-radius, -q - radius);
@@ -269,6 +272,13 @@ export class HexagonMap {
             }
         }
         return lines;
+    }
+
+    public toJSON() {
+        return {
+            hexagons: this.hexagons,
+            seed: this.seed,
+        };
     }
 }
 

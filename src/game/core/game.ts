@@ -1,11 +1,12 @@
-import { clearCanvas, drawImage, drawLines, drawPolygon, drawText, resizeCanvas } from "./../../core/render/canvas";
-import Layout, { orientation } from "./../../core/models/layout";
 import { Vector2, Vector2Attributes } from "../../core/models/vector";
-import { initialize } from "./../../game/core/events";
-import { getSetting, loadSettings } from "./settings";
-import LoadingScreen from "./loadingScreen";
-import HexagonMap from "../models/hexagonMap";
+import { loadObject, saveObject } from "../../core/save";
+import { getSetting, loadSettings } from "../../core/settings";
 import Hex from "../models/hex";
+import HexagonMap from "../models/hexagonMap";
+import { clearCanvas, drawLines, drawPolygon, resizeCanvas } from "./../../core/render/canvas";
+import { initialize } from "./../../game/core/events";
+import Layout, { orientation } from "./layout";
+import LoadingScreen from "./loadingScreen";
 
 export default class Game {
     private layout: Layout;
@@ -49,7 +50,6 @@ export default class Game {
 
     private draw(deltaTime) {
         this.hexMap.draw(this.layout);
-        drawText("FPS: " + Math.round(1 / deltaTime));
         if (this.highlightedHex) {
             let ring = this.hexMap.range(this.highlightedHex, 1);
             drawLines(this.hexMap.outlineHexGroup(this.layout, ring), "darkgreen", 2);
@@ -71,7 +71,6 @@ export default class Game {
     }
 
     public gameLoop(timeStamp: DOMHighResTimeStamp) {
-        // Calculate how much time has passed
         let deltaTime = Math.min(timeStamp - this.oldTimeStamp, 100) / 1000;
 
         this.secondsPassed += deltaTime;
@@ -84,6 +83,23 @@ export default class Game {
         this.oldTimeStamp = timeStamp;
 
         window.requestAnimationFrame((t) => this.gameLoop(t));
+    }
+
+    public async save() {
+        let now = performance.now();
+        let save = {
+            layout: this.layout,
+            hexMap: this.hexMap,
+        };
+        saveObject("save", save);
+        console.log("save took " + (performance.now() - now) + "ms");
+    }
+
+    public async load() {
+        let now = performance.now();
+        let save = loadObject("save");
+        console.log(save);
+        console.log("save took " + (performance.now() - now) + "ms");
     }
 
     public zoom(factor: Vector2) {
@@ -102,10 +118,12 @@ export default class Game {
         this.tap = performance.now();
         if (!position) return;
         this.tapedHex = this.hexMap.pixelToHex(this.layout, position);
+        this.save();
     }
 
     public async tapUp(position: Vector2 | Vector2Attributes | undefined) {
         this.tap = 0;
+        this.load();
         if (!this.tapedHex) return;
         this.highlightedHex = this.tapedHex;
     }

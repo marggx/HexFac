@@ -1,5 +1,5 @@
-import { loadObject, saveObject } from "../../core/save";
-import { defaultSettings } from "../const";
+import { defaultSettings } from "../game/const";
+import { loadObject, saveObject } from "./save";
 
 export default {};
 
@@ -30,7 +30,6 @@ export function saveSettings(saveSettings?: any): void {
 export function getSetting(key: string): any {
     if (key.includes(".")) {
         const keys = key.split(".");
-        console.log(keys);
         let value = settings;
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
