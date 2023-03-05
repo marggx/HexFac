@@ -24,3 +24,13 @@ export const defaultTiles = [
     "granite",
     "basalt",
 ];
+
+export const defaultItems = ["iron", "copper", "coal", "wood", "stone"];
+
+interface BuildingType {
+    [index: string]: string[];
+}
+export const buildingTypeToImage: BuildingType = {
+    forest: ["forest.png"],
+    rock: ["rock.png"],
+};
