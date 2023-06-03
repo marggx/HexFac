@@ -19,14 +19,18 @@ body {
     left: 0;
     right: 0;
     width: 80svw;
-    height: 10svh;
+    height: 3svh;
     background-color: #323232;
     color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
     border-radius: 12px;
+}
+
+.footer .buttons {
+    margin-top: -2svh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    flex-direction: row;
 }
 
 #loadingScreen {

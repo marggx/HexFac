@@ -6,16 +6,41 @@
     <title>HEXFAC</title>
   </head>
   <body>
-    <div id="app"></div>
-    <canvas id="game"></canvas>
-    <div id="ui">
-        <div class="header"></div>
-        <div class="footer"></div>
+    <div class="ui">
+        <div class="header">
+
+        </div>
+        <div class="footer">
+            <div class="buttons">
+                <div class="buildings">
+                    <svg width="4svh" height="4svh" fill="#000000" version="1.1" viewBox="0 0 184.75 184.75" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0,92.375l46.188-80h92.378l46.185,80l-46.185,80H46.188L0,92.375z"/>
+                    </svg>
+                </div>
+                <div class="building">
+                    <svg width="4svh" height="4svh" fill="#000000" version="1.1" viewBox="0 0 184.75 184.75" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0,92.375l46.188-80h92.378l46.185,80l-46.185,80H46.188L0,92.375z"/>
+                    </svg>
+                </div>
+                <div class="resources">
+                    <svg width="4svh" height="4svh" fill="#000000" version="1.1" viewBox="0 0 184.75 184.75" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0,92.375l46.188-80h92.378l46.185,80l-46.185,80H46.188L0,92.375z"/>
+                    </svg>
+                </div>
+                <div class="upgrades">
+                    <svg width="4svh" height="4svh" fill="#000000" version="1.1" viewBox="0 0 184.75 184.75" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0,92.375l46.188-80h92.378l46.185,80l-46.185,80H46.188L0,92.375z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
     </div>
+    <canvas id="game"></canvas>
     <div id="loadingScreen">
       <div id="loadingText">Loading...</div>
       <progress id="loadingProgress" value="0" max="100"></progress>
     </div>
+    <div id="app"><div id="debug"></div></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

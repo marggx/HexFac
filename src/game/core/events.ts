@@ -1,4 +1,4 @@
-import { Vector2 } from "../../core/models/vector";
+import { Vector2 } from "../models/vector";
 import Game from "./game";
 
 export function initialize(args: { game: Game }) {
@@ -8,7 +8,10 @@ export function initialize(args: { game: Game }) {
 
     addEventListener("pointerdown", (e) => game.tapDown({ x: e.clientX, y: e.clientY }));
 
-    addEventListener("pointermove", (e) => game.tapMove({ x: e.movementX, y: e.movementY }));
+    addEventListener("pointermove", (e) => {
+        game.tapMove({ x: e.movementX, y: e.movementY });
+        game.debug({ x: e.clientX, y: e.clientY });
+    });
 
     addEventListener("wheel", (e) => game.zoom(new Vector2((e.deltaY * -1) / 50, (e.deltaY * -1) / 50)));
 }

@@ -6,6 +6,7 @@ export interface Vector2Attributes {
     maxX?: number;
     minX?: number;
 }
+
 export class Vector2 implements Vector2Attributes {
     public x: number;
     public y: number;

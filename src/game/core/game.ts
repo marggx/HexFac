@@ -1,22 +1,31 @@
-import { Vector2, Vector2Attributes } from "../../core/models/vector";
 import { loadObject, saveObject } from "../../core/save";
 import { getSetting, loadSettings } from "../../core/settings";
+import { Building } from "../models/building";
+import Sawmill from "../models/buildings/sawmill";
 import Hex from "../models/hex";
 import HexagonMap from "../models/hexagonMap";
-import { clearCanvas, drawLines, drawPolygon, resizeCanvas } from "./../../core/render/canvas";
+import { Vector2, Vector2Attributes } from "../models/vector";
+import { clearCanvas, drawLines, drawPolygon, resizeCanvas, writeText } from "./../../core/render/canvas";
 import { initialize } from "./../../game/core/events";
 import Layout, { orientation } from "./layout";
 import LoadingScreen from "./loadingScreen";
 
+const FPS: number = 59;
+const FPSInterval: number = 1000 / FPS;
+const UPS: number = 10;
+const UPSSInterval: number = 1000 / UPS;
+
+let debugHtml = "";
 export default class Game {
     private layout: Layout;
-    private hexMap = new HexagonMap(20);
-    private secondsPassed: number = 0;
-    private oldTimeStamp: number = 0;
+    private hexMap = new HexagonMap(10);
+    private FPSOldTimeStamp: number = 0;
+    private UPSOldTimeStamp: number = 0;
     private tapedHex: Hex | undefined = undefined;
     private highlightedHex: Hex | undefined = undefined;
     private tap: DOMHighResTimeStamp = 0;
 
+    deltaTime = 0;
     constructor() {
         let loading = new LoadingScreen(15);
 
@@ -48,9 +57,14 @@ export default class Game {
         this.gameLoop(0);
     }
 
-    private draw(deltaTime) {
+    private draw() {
         this.hexMap.draw(this.layout);
         if (this.highlightedHex) {
+            debugHtml = "";
+            (this.hexMap.getHexagon(this.highlightedHex.id) as Building).publicStorage.forEach((value, key) => {
+                debugHtml += `${key}: ${value.value}`;
+            });
+            writeText(debugHtml, new Vector2(100, 100));
             let ring = this.hexMap.range(this.highlightedHex, 1);
             drawLines(this.hexMap.outlineHexGroup(this.layout, ring), "darkgreen", 2);
             for (let hex of ring) {
@@ -71,59 +85,65 @@ export default class Game {
     }
 
     public gameLoop(timeStamp: DOMHighResTimeStamp) {
-        let deltaTime = Math.min(timeStamp - this.oldTimeStamp, 100) / 1000;
+        let FPSDeltaTime = timeStamp - this.FPSOldTimeStamp;
+        let UPSDeltaTime = timeStamp - this.UPSOldTimeStamp;
 
-        this.secondsPassed += deltaTime;
-        if (this.secondsPassed > 0.03) {
-            this.secondsPassed = 0.001;
+        if (FPSDeltaTime > FPSInterval) {
             clearCanvas();
-            this.draw(deltaTime);
+            this.draw();
+            this.FPSOldTimeStamp = timeStamp - (FPSDeltaTime % FPSInterval);
+            this.layout.changed = false;
         }
 
-        this.oldTimeStamp = timeStamp;
-
+        if (UPSDeltaTime > UPSSInterval) {
+            this.UPSOldTimeStamp = timeStamp - (UPSDeltaTime % UPSSInterval);
+            console.log("update", UPSDeltaTime / 1000, "s");
+            this.update(UPSDeltaTime / 1000);
+        }
         window.requestAnimationFrame((t) => this.gameLoop(t));
     }
 
+    public update(deltaTime: number) {
+        this.hexMap.update(deltaTime);
+    }
+
     public async save() {
-        let now = performance.now();
         let save = {
             layout: this.layout,
             hexMap: this.hexMap,
         };
         saveObject("save", save);
-        console.log("save took " + (performance.now() - now) + "ms");
     }
 
     public async load() {
-        let now = performance.now();
         let save = loadObject("save");
-        console.log(save);
-        console.log("save took " + (performance.now() - now) + "ms");
     }
 
     public zoom(factor: Vector2) {
         let hexAtCenter = this.hexMap.pixelToHex(this.layout, this.layout.center);
-        this.layout.size.add(factor);
+        this.layout.setSize(factor, true);
         if (hexAtCenter) {
             let newPosition = this.hexMap.hexToPixel(this.layout, hexAtCenter);
-            this.layout.origin.add({
-                x: this.layout.center.x - newPosition.x,
-                y: this.layout.center.y - newPosition.y,
-            });
+            this.layout.setOrigin(
+                {
+                    x: this.layout.center.x - newPosition.x,
+                    y: this.layout.center.y - newPosition.y,
+                },
+                true
+            );
         }
     }
 
     public async tapDown(position: Vector2 | Vector2Attributes | undefined) {
         this.tap = performance.now();
         if (!position) return;
+        this.layout.changed = true;
         this.tapedHex = this.hexMap.pixelToHex(this.layout, position);
-        this.save();
+        this.hexMap.replaceBuilding(new Sawmill(this.tapedHex!.getPosition(), 1));
     }
 
     public async tapUp(position: Vector2 | Vector2Attributes | undefined) {
         this.tap = 0;
-        this.load();
         if (!this.tapedHex) return;
         this.highlightedHex = this.tapedHex;
     }
@@ -131,9 +151,20 @@ export default class Game {
     public async tapMove(position: Vector2 | Vector2Attributes | undefined) {
         if (!this.tap) return;
         if (!position) return;
-        this.layout.origin.add({ x: position.x, y: position.y });
+        this.layout.setOrigin({ x: position.x, y: position.y }, true);
 
         if (performance.now() - this.tap < 100) return;
         this.tapedHex = undefined;
+    }
+
+    public debug(position: Vector2 | Vector2Attributes | undefined) {
+        if (!position) return;
+        let hex = this.hexMap.pixelToHex(this.layout, position) as Building;
+        if (!hex) return;
+        debugHtml = "";
+        hex.publicStorage.forEach((value, key) => {
+            debugHtml += `${key}: ${value.value}`;
+        });
+        writeText(debugHtml, new Vector2(100, 100));
     }
 }

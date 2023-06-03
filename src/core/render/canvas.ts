@@ -1,4 +1,4 @@
-import { Vector2 } from "../models/vector";
+import { Vector2 } from "../../game/models/vector";
 
 const sqrt3 = Math.sqrt(3);
 
@@ -28,16 +28,16 @@ export function clearCanvas() {
 }
 
 let imgs = [
-    "./../../../src/img/grass_12.png",
-    "./../../../src/img/grass_13.png",
-    "./../../../src/img/grass_14.png",
-    "./../../../src/img/grass_15.png",
-    "./../../../src/img/grass_16.png",
-    "./../../../src/img/dirt_13.png",
-    "./../../../src/img/dirt_14.png",
-    "./../../../src/img/dirt_15.png",
-    "./../../../src/img/dirt_16.png",
-    "./../../../src/img/dirt_17.png",
+    "./../../../src/assets/img/grass_12.png",
+    "./../../../src/assets/img/grass_13.png",
+    "./../../../src/assets/img/grass_14.png",
+    "./../../../src/assets/img/grass_15.png",
+    "./../../../src/assets/img/grass_16.png",
+    "./../../../src/assets/img/dirt_13.png",
+    "./../../../src/assets/img/dirt_14.png",
+    "./../../../src/assets/img/dirt_15.png",
+    "./../../../src/assets/img/dirt_16.png",
+    "./../../../src/assets/img/dirt_17.png",
 ];
 let imgr = [];
 for (let i = 0; i < imgs.length; i++) {
@@ -77,6 +77,7 @@ export function drawText(text: string) {
 
 export function drawImage(point: Vector2, x: number, y: number, img: string) {
     let imgn = imgr[imgs.indexOf(img)];
+    if (!imgn) return;
     ctx.drawImage(imgn, point.x - (sqrt3 * x) / 2, point.y - (2 * y) / 2, sqrt3 * x, 2 * y);
 }
 
@@ -91,4 +92,9 @@ export function drawLines(lines: [Vector2, Vector2][], strokeStyle: string, line
     ctx.lineWidth = lineWidth;
     ctx.strokeStyle = strokeStyle;
     ctx.stroke();
+}
+
+export function writeText(text: string, point: Vector2) {
+    ctx.font = "30px Arial";
+    ctx.fillText(text, point.x, point.y);
 }

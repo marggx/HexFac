@@ -2,7 +2,7 @@ import { Item } from "./item";
 
 export interface RecipeAttributes {
     id: string;
-    name?: string;
+    name: string;
     description?: string;
     icon?: string;
     time: number;
@@ -12,7 +12,7 @@ export interface RecipeAttributes {
 
 export class Recipe implements RecipeAttributes {
     id: string;
-    name?: string;
+    name: string;
     description?: string;
     icon?: string;
     time: number;
@@ -21,7 +21,7 @@ export class Recipe implements RecipeAttributes {
 
     constructor(
         id: string,
-        name?: string,
+        name: string,
         description?: string,
         icon?: string,
         time?: number,

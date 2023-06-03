@@ -1,8 +1,6 @@
 import { defaultSettings } from "../game/const";
 import { loadObject, saveObject } from "./save";
 
-export default {};
-
 export let settings: any = defaultSettings;
 
 export function loadSettings(): any {
@@ -15,7 +13,7 @@ export function loadSettings(): any {
     return settings;
 }
 
-export function saveToSettings(setting: { key: string; value: any }): void {
+export function setSettings(setting: { key: string; value: any }): void {
     settings[setting.key] = setting.value;
     saveObject("settings", settings);
 }

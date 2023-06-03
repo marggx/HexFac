@@ -20,4 +20,8 @@ export class Item implements ItemAttributes {
         this.icon = icon;
         this.value = value;
     }
+
+    public clone(): Item {
+        return new Item(this.type, this.name, this.value, this.description, this.icon);
+    }
 }

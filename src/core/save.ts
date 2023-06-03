@@ -1,5 +1,3 @@
-export default {};
-
 export function saveObject(key: string, object: any): void {
     const objectString = JSON.stringify(object);
 

@@ -1,4 +1,4 @@
-import { Vector2, Vector2Attributes } from "../../core/models/vector";
+import { Vector2, Vector2Attributes } from "../models/vector";
 
 const sqrt3 = Math.sqrt(3);
 
@@ -65,6 +65,24 @@ export class Layout implements LayoutAttributes {
             vector.greaterThan({ x: -10, y: -10 }) &&
             vector.lessThan({ x: this.viewport.x + 10, y: this.viewport.y + 10 })
         );
+    }
+
+    public setOrigin(origin: Vector2 | Vector2Attributes, add: boolean = false): void {
+        this.changed = true;
+        if (add) {
+            this.origin.add(origin);
+        } else {
+            this.origin = origin as Vector2;
+        }
+    }
+
+    public setSize(size: Vector2 | Vector2Attributes, add: boolean = false): void {
+        this.changed = true;
+        if (add) {
+            this.size.add(size);
+        } else {
+            this.size = size as Vector2;
+        }
     }
 
     public toJSON() {

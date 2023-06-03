@@ -1,27 +1,28 @@
 import alea from "alea";
 import { createNoise2D } from "simplex-noise";
 
-import { Vector2, Vector2Attributes } from "../../core/models/vector";
 import Layout from "../core/layout";
 import { drawImage, drawPolygon } from "./../../core/render/canvas";
 import { Building } from "./building";
 import Hex, { HexCoordinates } from "./hex";
+import WoodRecipe from "./recipes/wood";
+import { Vector2, Vector2Attributes } from "./vector";
 
 let imgs = [
-    "./../../../src/img/grass_12.png",
-    "./../../../src/img/grass_13.png",
-    "./../../../src/img/grass_14.png",
-    "./../../../src/img/grass_15.png",
-    "./../../../src/img/grass_16.png",
-    "./../../../src/img/dirt_13.png",
-    "./../../../src/img/dirt_14.png",
-    "./../../../src/img/dirt_15.png",
-    "./../../../src/img/dirt_16.png",
-    "./../../../src/img/dirt_17.png",
+    "./../../../src/assets/img/grass_12.png",
+    "./../../../src/assets/img/grass_13.png",
+    "./../../../src/assets/img/grass_14.png",
+    "./../../../src/assets/img/grass_15.png",
+    "./../../../src/assets/img/grass_16.png",
+    "./../../../src/assets/img/dirt_13.png",
+    "./../../../src/assets/img/dirt_14.png",
+    "./../../../src/assets/img/dirt_15.png",
+    "./../../../src/assets/img/dirt_16.png",
+    "./../../../src/assets/img/dirt_17.png",
 ];
 
 export class HexagonMap {
-    private hexagons: Building[] = [];
+    private hexagons: Map<string, Building> = new Map();
     private seed: string;
     private directions: HexCoordinates[] = [
         { q: 1, r: 0, s: -1 },
@@ -42,6 +43,8 @@ export class HexagonMap {
         new Vector2(Math.cos((this.PI2 * -4.5) / 6), Math.sin((this.PI2 * -4.5) / 6)),
     ];
 
+    private hexPositionCache: Map<string, [Vector2[], Vector2]> = new Map();
+
     constructor(radius: number, seed: string = "HarryPotter") {
         this.seed = seed;
         let prng = alea(this.seed);
@@ -51,46 +54,55 @@ export class HexagonMap {
             const r2 = Math.min(radius, -q + radius);
             for (let r = r1; r <= r2; r++) {
                 let imgn = imgs[Math.floor(Math.abs(noise2D(-q, r)) * 10)];
-                this.hexagons.push(new Building({ q: q, r: r, s: -q - r }, imgn));
+                this.hexagons.set(
+                    q + "_" + r + "_" + (-q - r),
+                    new Building({ q: q, r: r, s: -q - r }, imgn, undefined, 1, 1, true, new WoodRecipe())
+                );
             }
         }
+    }
+
+    private getCachedHexPosition(hex: Hex, layout: Layout): [Vector2[], Vector2] {
+        let cached = this.hexPositionCache.get(hex.id);
+        if (cached !== undefined) {
+            return cached;
+        }
+
+        let polygonCorners = this.polygonCorners(layout, hex);
+        let hexPixel = this.hexToPixel(layout, hex);
+        this.hexPositionCache.set(hex.id, [polygonCorners, hexPixel]);
+        return [polygonCorners, hexPixel];
     }
 
     public update(deltaTime: number) {
-        for (let i = 0; i < this.hexagons.length; i++) {
-            this.hexagons[i].update(deltaTime);
-        }
+        this.hexagons.forEach((hex) => {
+            if (!hex.updateable) return;
+            hex.update(deltaTime, this.range(hex, hex.range) as Building[]);
+        });
     }
 
     public draw(layout: Layout) {
-        for (let i = 0; i < this.hexagons.length; i++) {
-            drawImage(this.hexToPixel(layout, this.hexagons[i]), layout.size.x, layout.size.y, this.hexagons[i].type);
-            drawPolygon(this.polygonCorners(layout, this.hexagons[i]), null, "darkgray", 1);
+        if (layout.changed) {
+            this.hexPositionCache.clear();
         }
+
+        this.hexagons.forEach((hex) => {
+            let [polygonCorners, hexPixel] = this.getCachedHexPosition(hex, layout);
+            drawImage(hexPixel, layout.size.x, layout.size.y, hex.type);
+            drawPolygon(polygonCorners, null, "darkgray", 1);
+        });
     }
 
-    public getHexagons(): Building[] {
-        return this.hexagons;
+    public getHexagon(id: string): Hex | undefined {
+        return this.hexagons.get(id);
     }
 
-    public getHexagon(id: string): Building | undefined {
-        for (let i = 0; i < this.hexagons.length; i++) {
-            const hex = this.hexagons[i];
-            if (hex.id === id) {
-                return hex;
-            }
-        }
-        return undefined;
+    public getHexagonByCords(cords: HexCoordinates): Hex | undefined {
+        return this.hexagons.get(cords.q + "_" + cords.r + "_" + cords.s);
     }
 
-    public getHexagonByCords(cords: HexCoordinates): Building | undefined {
-        for (let i = 0; i < this.hexagons.length; i++) {
-            const hex = this.hexagons[i];
-            if (this.equals(hex, cords)) {
-                return hex;
-            }
-        }
-        return undefined;
+    public replaceBuilding(hex: Building) {
+        this.hexagons.set(hex.id, hex);
     }
 
     public axialToCube(axial: Vector2): HexCoordinates {
