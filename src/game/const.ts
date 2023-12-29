@@ -25,12 +25,23 @@ export const defaultTiles = [
     "basalt",
 ];
 
-export const defaultItems = ["iron", "copper", "coal", "wood", "stone"];
-
 interface BuildingType {
     [index: string]: string[];
 }
+
+
 export const buildingTypeToImage: BuildingType = {
-    forest: ["forest.png"],
+    forest: ["./../assets/img/forest.png"],
     rock: ["rock.png"],
+    furnace: ["rock.png"],
 };
+
+export function loadImages(images: string[]) {
+    let imgs: HTMLImageElement[] = [];
+    for (let i = 0; i < images.length; i++) {
+        let img = new Image();
+        img.src = images[i];
+        imgs.push(img);
+    }
+    return imgs;
+}

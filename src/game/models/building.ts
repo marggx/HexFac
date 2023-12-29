@@ -1,4 +1,4 @@
-import { roundToDigit } from "../../core/utils/numberUtils";
+import { floorToDigit } from "../../core/utils/numberUtils";
 import { buildingTypeToImage } from "../const";
 import Hex from "./hex";
 import { Item } from "./item";
@@ -27,9 +27,14 @@ export class Building extends Hex implements BuildingAttributes {
     updateable: boolean = false;
     recipe?: Recipe;
     placableOn?: [string];
+
     publicStorage: Map<string, Item> = new Map();
-    publicStorageCapacity: number = 100;
+    publicStorageChange: Map<string, [number, number]> = new Map();
+    publicStoragePS: Map<string, number> = new Map();
+
     privateStorage: Map<string, Item> = new Map();
+
+    isHighlighted: boolean = false;
 
     constructor(
         position: { q: number; r: number; s: number },
@@ -39,8 +44,7 @@ export class Building extends Hex implements BuildingAttributes {
         range?: number,
         conenctToSameType?: boolean,
         recipe?: Recipe,
-        placableOn?: [string],
-        storageCapacity?: number
+        placableOn?: [string]
     ) {
         super(position.q, position.r, position.s);
         this.type = type;
@@ -54,31 +58,37 @@ export class Building extends Hex implements BuildingAttributes {
         this.conenctToSameType = conenctToSameType ?? true;
         this.recipe = recipe;
         this.placableOn = placableOn;
-        this.publicStorageCapacity = storageCapacity ?? this.publicStorageCapacity;
-        if (this.recipe) {
-            this.updateable = true;
-            this.recipe.outputs.forEach((item: Item) => {
-                let sItem = item.clone();
-                sItem.value = 0;
-                this.publicStorage.set(sItem.type, sItem);
-            });
-            this.recipe.inputs.forEach((item: Item) => {
-                let sItem = item.clone();
-                sItem.value = 0;
-                this.privateStorage.set(sItem.type, sItem);
-            });
+        if (recipe) {
+            this.setRecipe(recipe);
         }
     }
 
+    public setRecipe(recipe: Recipe) {
+        this.recipe = recipe;
+        this.updateable = true;
+        this.recipe.outputs.forEach((item: Item) => {
+            let sItem = item.clone();
+            sItem.value = 0;
+            this.publicStorage.set(sItem.type, sItem);
+        });
+        this.recipe.inputs.forEach((item: Item) => {
+            let sItem = item.clone();
+            sItem.value = 0;
+            this.privateStorage.set(sItem.type, sItem);
+        });
+    }
+
     public update(deltaTime: number, nearbyBuildings: Building[]) {
-        this.getRecipeInputFromNearbyBuildings(deltaTime, nearbyBuildings);
+        this.getRecipeInputFromNearbyBuildings(nearbyBuildings);
         this.setStorageBasedOnRecipe(deltaTime);
     }
 
     setStorageBasedOnRecipe(deltaTime: number) {
         let allInputsAvailable = true;
-        for (let i = 0; i < this.recipe!.inputs.length; i++) {
-            if (this.privateStorage.get(this.recipe!.inputs[i].type)?.value! >= this.recipe!.inputs[i].value) {
+        const inputs = this.recipe!.inputs;
+        const outputs = this.recipe!.outputs;
+        for (let i = 0; i < inputs.length; i++) {
+            if (this.privateStorage.get(inputs[i].type)?.value! >= inputs[i].value) {
                 allInputsAvailable = true;
             } else {
                 allInputsAvailable = false;
@@ -86,38 +96,86 @@ export class Building extends Hex implements BuildingAttributes {
             }
         }
 
-        if (!allInputsAvailable) return;
-
-        for (let i = 0; i < this.recipe!.inputs.length; i++) {
-            this.privateStorage.get(this.recipe!.inputs[i].type)!.value -= this.recipe!.inputs[i].value;
+        if (!allInputsAvailable) {
+            this.addDeltaToChange(0, deltaTime, null);
+            return;
         }
 
-        for (let i = 0; i < this.recipe!.outputs.length; i++) {
-            if (this.recipe!.inputs.length === 0) {
-                this.publicStorage.get(this.recipe!.outputs[i].type)!.value += roundToDigit(
-                    this.recipe!.outputs[i].value * deltaTime,
-                    2
-                );
-                continue;
-            }
-            this.publicStorage.get(this.recipe!.outputs[i].type)!.value += this.recipe!.outputs[i].value;
+        for (let i = 0; i < outputs.length; i++) {
+            let item = outputs[i];
+            let storage = this.publicStorage.get(item.type);
+
+            if (!storage) return; // * INFO this should never happen
+
+            let change = deltaTime * item.value;
+            storage.value += change;
+
+            this.addDeltaToChange(change, deltaTime, item.type);
+        }
+
+        for (let i = 0; i < inputs.length; i++) {
+            let item = inputs[i];
+            let storage = this.privateStorage.get(item.type);
+
+            if (!storage) return; // * INFO this should never happen
+
+            storage.value -= deltaTime * item.value;
         }
     }
 
-    getRecipeInputFromNearbyBuildings(deltaTime: number, nearbyBuildings: Building[]) {
+    addDeltaToChange(change: number, deltaTime: number, type: string | null) {
+        if (!this.isHighlighted) return;
+        if (type) {
+            let current = this.publicStorageChange.get(type);
+            if (!current) {
+                this.publicStorageChange.set(type, [change, deltaTime]);
+            } else {
+                current[0] += change;
+                current[1] += deltaTime;
+                if (current[1] >= 1) {
+                    this.publicStoragePS.set(type, floorToDigit(current[0], 2));
+                    current[0] = 0;
+                    current[1] = 0;
+                }
+            }
+        } else {
+            for (let i = 0; i < this.recipe!.outputs.length; i++) {
+                let item = this.recipe!.inputs[i];
+                let current = this.publicStorageChange.get(item.type);
+                if (!current) {
+                    this.publicStorageChange.set(item.type, [change, deltaTime]);
+                } else {
+                    current[0] += change;
+                    current[1] += deltaTime;
+                    if (current[1] >= 1) {
+                        this.publicStoragePS.set(item.type, floorToDigit(current[0], 2));
+                        current[0] = 0;
+                        current[1] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    getRecipeInputFromNearbyBuildings(nearbyBuildings: Building[]) {
         for (let i = 0; i < this.recipe!.inputs.length; i++) {
+            let item = this.recipe!.inputs[i];
+            let privareStorageValue = this.privateStorage.get(item.type)!.value;
+            if (privareStorageValue >= this.recipe!.inputs[i].value) continue;
+
             for (let j = 0; j < nearbyBuildings.length; j++) {
                 if (!(nearbyBuildings[j] instanceof Building)) continue;
 
-                let item = this.recipe!.inputs[i];
                 let storage = nearbyBuildings[j].publicStorage.get(item.type);
                 if (!storage) continue;
 
-                let min = roundToDigit(Math.min(item.value * deltaTime, storage.value * deltaTime), 2);
-                this.privateStorage.get(item.type)!.value += min;
+                let min = Math.min(item.value, storage.value);
+                privareStorageValue += min;
                 storage.value -= min;
 
-                if (this.privateStorage.get(item.type)!.value >= item.value) {
+                this.addDeltaToChange(-min, 0, item.type);
+
+                if (privareStorageValue >= item.value) {
                     break;
                 }
             }

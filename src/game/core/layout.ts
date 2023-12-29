@@ -76,6 +76,12 @@ export class Layout implements LayoutAttributes {
         }
     }
 
+    public reset(): void {
+        this.changed = true;
+        this.origin = this.center.clone();
+        this.viewport = new Vector2(window.innerWidth, window.innerHeight);
+    }
+
     public setSize(size: Vector2 | Vector2Attributes, add: boolean = false): void {
         this.changed = true;
         if (add) {

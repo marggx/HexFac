@@ -1,3 +1,86 @@
+@font-face {
+    font-display: swap;
+    font-family: "Comfortaa";
+    font-style: normal;
+    font-weight: 300;
+    src: url("./assets/fonts/Comfortaa-Light.ttf") format("truetype");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "Comfortaa";
+    font-style: normal;
+    font-weight: 400;
+    src: url("./assets/fonts/Comfortaa-Regular.ttf") format("truetype");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "Comfortaa";
+    font-style: normal;
+    font-weight: 700;
+    src: url("./assets/fonts/Comfortaa-Bold.ttf") format("truetype");
+}
+
+@font-face {
+    font-display: swap;
+    font-family: "Comfortaa";
+    font-style: normal;
+    font-weight: 600;
+    src: url("./assets/fonts/Comfortaa-SemiBold.ttf") format("truetype");
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.top-nav {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    display: flex;
+    margin: 0.5rem;
+}
+
+.stat {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: 700;
+}
+
+.stat-figure {
+    height: 48px;
+    width: 48px;
+}
+
+.btm-nav-cards {
+    display: flex;
+    position: fixed;
+    bottom: 3rem;
+    width: 100%;
+    opacity: 100%;
+    align-items: center;
+    justify-content: space-around;
+    overflow: hidden;
+    transition: opacity 0.25s ease-in-out;
+}
+
+.btm-nav-cards:focus {
+    opacity: 0;
+}
+
+canvas {
+    touch-action: none !important;
+}
+/*
 canvas {
     background-color: darkslateblue;
 }
@@ -19,6 +102,7 @@ body {
     left: 0;
     right: 0;
     width: 80svw;
+    max-width: 800px;
     height: 3svh;
     background-color: #323232;
     color: #fff;
@@ -55,4 +139,4 @@ body {
     border-radius: 10px;
     margin: 10px;
     overflow: hidden;
-}
+} */

@@ -1,6 +1,5 @@
 import alea from "alea";
 import { createNoise2D } from "simplex-noise";
-
 import Layout from "../core/layout";
 import { drawImage, drawPolygon } from "./../../core/render/canvas";
 import { Building } from "./building";
@@ -45,7 +44,7 @@ export class HexagonMap {
 
     private hexPositionCache: Map<string, [Vector2[], Vector2]> = new Map();
 
-    constructor(radius: number, seed: string = "HarryPotter") {
+    constructor(radius: number, seed: string = "HexFactory") {
         this.seed = seed;
         let prng = alea(this.seed);
         let noise2D = createNoise2D(prng);
@@ -86,11 +85,17 @@ export class HexagonMap {
             this.hexPositionCache.clear();
         }
 
+        let drawnHexagons: number = 0;
+
         this.hexagons.forEach((hex) => {
             let [polygonCorners, hexPixel] = this.getCachedHexPosition(hex, layout);
+            if (!this.isHexInViewport(layout, hex, polygonCorners)) return;
+            drawnHexagons++;
             drawImage(hexPixel, layout.size.x, layout.size.y, hex.type);
             drawPolygon(polygonCorners, null, "darkgray", 1);
         });
+
+        console.log("drawn hexagons: " + drawnHexagons);
     }
 
     public getHexagon(id: string): Hex | undefined {
@@ -167,7 +172,7 @@ export class HexagonMap {
 
     public getNeighbors(hex: Hex): (Hex | undefined)[] {
         let results: (Hex | undefined)[] = [];
-        for (let i = 0; i < this.directions.length; i++) {
+        for (let i = 0, n = this.directions.length; i < n; i++) {
             let neighbor = this.getNeighbor(hex, i);
             results.push(neighbor);
         }
@@ -253,9 +258,9 @@ export class HexagonMap {
         return corners;
     }
 
-    public isHexInViewport(layout: Layout, hex: Hex | HexCoordinates): boolean {
-        const corners = this.polygonCorners(layout, hex);
-        for (let i = 0; i < corners.length; i++) {
+    public isHexInViewport(layout: Layout, hex: Hex | HexCoordinates, corners: Vector2[] | null = null): boolean {
+        corners = corners ?? this.polygonCorners(layout, hex);
+        for (let i = 0, n = corners.length; i < n; i++) {
             if (layout.isVectorInViewport(corners[i])) {
                 return true;
             }
@@ -266,11 +271,11 @@ export class HexagonMap {
 
     public outlineHexGroup(layout: Layout, hexagons: Hex[]): [Vector2, Vector2][] {
         let lines: [Vector2, Vector2][] = [];
-        for (let i = 0; i < hexagons.length; i++) {
+        for (let i = 0, n = hexagons.length; i < n; i++) {
             let hex = hexagons[i];
             let neighbors = this.getNeighbors(hex);
 
-            for (let j = 0; j < neighbors.length; j++) {
+            for (let j = 0, n = neighbors.length; j < n; j++) {
                 let neighbor = neighbors[j];
 
                 if (!neighbor || hexagons.indexOf(neighbor) === -1) {

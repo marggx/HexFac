@@ -66,6 +66,10 @@ export class Vector2 implements Vector2Attributes {
         return `(${this.x}, ${this.y})`;
     }
 
+    public clone(): Vector2 {
+        return new Vector2(this.x, this.y, this.maxX, this.minX);
+    }
+
     public toJSON() {
         let returnStrg = {
             x: this.x,

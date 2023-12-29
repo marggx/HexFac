@@ -1,3 +1,6 @@
+export const upArrow: string = "↗︎";
+export const downArrow: string = "↘︎";
+
 export function find(selector: string) {
     let el = document.querySelector(selector);
     if (el === null) {
@@ -32,4 +35,12 @@ export function createSvg(tag: string, className: string | null = null) {
         el.setAttribute("class", className);
     }
     return el;
+}
+
+export function createDivider(text: string | null = null) {
+    let divider = create("div", "divider");
+    if (text !== null) {
+        divider.appendChild(createText(text));
+    }
+    return divider;
 }

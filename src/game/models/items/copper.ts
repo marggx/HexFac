@@ -2,6 +2,12 @@ import { Item } from "../item";
 
 export default class Copper extends Item {
     constructor() {
-        super("copper", "Copper", 1, "A piece of copper", "copper");
+        super(
+            "copper",
+            "Copper",
+            1,
+            "A piece of copper",
+            '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAAE4ElEQVR4nO2by4/bVBTGz0Q0fk0RQggWrBBI7IANjxWPBfTPqAoIMbHdaloEiAWeNMkkVSalM7wkXjvKgkcrAdtWakV5F9iAxENAWbUqsUNiXztBGDk06Uyw09LxvecyOT/pbGZz5p7j+13nfj4ABEEQBEEQBEEQBEEQBEEQBEEQBEEIousY17OadjJqGf3B2vY4z4hWjDCoqEdiB4rU0BRiB/TwgP573oUfRX91e+w7xdjdA29SA1IIysU1XsVny1rsLRZi14JhtEtwLzVhAlbXf8v9qW8Zcffpq8aFXxdr1IAJopYxyFdulNjd/a/Cj+IUNWD9019Rbhqs8pGbtGhbwOLHYBs14QJBufgkR7lJb8IC3DbKP/OwmvohR7lJDxN2zXzhR7CG/isvuZkSL4z/gVknahkRT7nJOAc+wV63FPhV7UbuckMH8ZQGLCm2ALnJasLtMOsENfUob7mZEo/ArBM0tJ94y82UeAlmnahphCLkJlWCTPgUZp3+qjC5STsDzsKsE63ovf6hf66KPVtM4dftgGMw6/TKyg5vsXC6bcGfAgs/cE044dlwM2wl/nDmr2NV7QQ3R6umHp3maHkOXBtU1WPRSs75V4f5I1ZTP4gdUEFeR0s7n3fhBxveiorJW9HhjPzFsKGd5ZU/aYK/pMSePfdeDDAHssEqyiFhjpYN903m98vKMq/8YUOPO3sv5vdM2AGywRr6mdyf+lbGW5EJz0/mD+vaj3nnjzLyty14FWSjfzA/3e1f6keYCR9P5k/OiDzlJtivxN7uuazX169gqzpa4cR2vxxHKzn8heY3YXBmETSQhaBcfGLT2/3gfNx7ZtsVXaT5ZeVx0fk9C+4CWUhezzaz+CDZ7nb6ds8MGx4e5Q8q6tu85GbKA1ACWWB17Rde293NChNeHOdf1r4Xnb9twuvwf3W0/ut2dy9xkRY1jUB0fteEr0EGujXjBu5yY2UfxLEDV1/2AXyFciP1QexXFJO73FgZUYI7gmfVnVj5z9twD3b9kwPwCPftbmXKwKO9qnIYK3/bBBO7/lN/geYlN252vMzq2re85SazARa8gV3/5BcoEyI3VmoBPkv8BKz8rgXfYNcfEjNlw93NUwIdLRPORc/N/3VRbsQ6aq4JHez6Qzh2tBK5EbRwa7wDjkdN3RtfFXOUG2m/smZl5cHO3sKXwh0tC056JbiFOcr9nX2Fzy/8TVTjk7We6uyBW7eUo9VFnhEbOmo19TgXR61lhEFVfT/TUZPA0dIxZ8SSxrAD2jle+Ucy2bbhnVRHDdvRCpBnxPz9Sl2Yo2bDQ9I5Wgx5RizrC73NRNZbWduEV+RztFq4M2KJRgtz1Ew4LZWjxZBnxIYXimLX3/9557rDGNvRCpBnxHxHKYlev7cAd0rjaDHkGbGgqr4r3FErwYI8jlYDd0YsrGs/iF5/24TX5HG0WrgzYmHKhSL39Y8+bcF2tHzkGTHXgWtQHTVsR8tHnhHrLSm7sNbfKcHd6I5WgDwj5leUt7DWP/y0BdvRCpBnxFhd+4633Ez9tAXd0WrizoiFTd3HWv/w0xZsR6uPPCO2wVETnN+1wMN3tFZwZ8TCpt5Bc9RM+Ajd0eohz4h1y8oD3r7CF1vCUSMIgiAIgiAIgiAIgiAIgiAIgiAIgiAIgiAIAmTgbw5Q8RmmtebGAAAAAElFTkSuQmCC">'
+        );
     }
 }
