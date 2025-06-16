@@ -51,6 +51,7 @@ export class Building extends Hex implements BuildingAttributes {
         if (typeof image === "string") {
             this.image = [image];
         } else {
+            // @ts-ignore
             this.image = image ?? buildingTypeToImage[type];
         }
         this.level = level ?? 1;

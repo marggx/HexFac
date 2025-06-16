@@ -43,6 +43,7 @@ export class HexagonMap {
     ];
 
     private hexPositionCache: Map<string, [Vector2[], Vector2]> = new Map();
+    private hexRingCache: Map<string, Hex[]> = new Map();
 
     constructor(radius: number, seed: string = "HexFactory") {
         this.seed = seed;
@@ -184,6 +185,10 @@ export class HexagonMap {
     }
 
     public ring(hex: Hex, radius: number): Hex[] {
+        let cached = this.hexRingCache.get(hex.id + "_" + radius);
+        if (cached !== undefined) {
+            return cached;
+        }
         let results: Hex[] = [];
         let current = this.add(hex, this.multiply(this.directions[4], radius, true)!, true)!;
         for (let i = 0; i < 6; i++) {
@@ -196,6 +201,8 @@ export class HexagonMap {
                 }
             }
         }
+
+        this.hexRingCache.set(hex.id + "_" + radius, results);
         return results;
     }
 

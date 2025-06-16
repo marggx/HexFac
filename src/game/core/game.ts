@@ -21,11 +21,11 @@ export default class Game {
     public canvas: HTMLCanvasElement = document.querySelector<HTMLCanvasElement>("#game")!;
     public ctx: CanvasRenderingContext2D = this.canvas.getContext("2d")!;
     public layout: Layout;
-    private hexMap = new HexagonMap(10);
+    private hexMap = new HexagonMap(15);
     private FPSOldTimeStamp: number = 0;
     private UPSOldTimeStamp: number = 0;
     private UIPSOldTimeStamp: number = 0;
-    private tapedHex: Hex | undefined = undefined;
+    private tapedHex: Building | undefined = undefined;
     private highlightedHex: Hex | undefined = undefined;
     private tap: DOMHighResTimeStamp = 0;
 
@@ -146,6 +146,13 @@ export default class Game {
         this.layout.changed = true;
         if (this.tapedHex) this.tapedHex.isHighlighted = false;
         this.tapedHex = this.hexMap.pixelToHex(this.layout, position) as Building;
+        this.tapedHex.isHighlighted = true;
+    }
+
+    public async tapUp(position: Vector2 | Vector2Attributes | undefined) {
+        this.tap = 0;
+        if (!this.tapedHex) return;
+        this.highlightedHex = this.tapedHex;
         let position2 = this.hexMap.hexToPixel(this.layout, this.tapedHex);
         this.layout.setOrigin(
             {
@@ -154,14 +161,7 @@ export default class Game {
             },
             true
         );
-        this.tapedHex.isHighlighted = true;
         setStorageDisplayFromItemMap(this.tapedHex.publicStorage, this.tapedHex.publicStoragePS);
-    }
-
-    public async tapUp(position: Vector2 | Vector2Attributes | undefined) {
-        this.tap = 0;
-        if (!this.tapedHex) return;
-        this.highlightedHex = this.tapedHex;
     }
 
     public async tapMove(position: Vector2 | Vector2Attributes | undefined) {
