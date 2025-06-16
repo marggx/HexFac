@@ -1,6 +1,6 @@
 # HexFac - Hexagon Factory Game
 
-HexFac is an open-source, modular, extensible hexagon-based factory simulation game. The project is designed for easy modding and extension, with a focus on clean architecture and separation of concerns.
+HexFac is a modular, extensible hexagon-based factory simulation game, with a focus on clean architecture, easy modding and separation of concerns.
 
 ---
 
