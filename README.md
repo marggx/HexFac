@@ -174,7 +174,7 @@ See [LICENSE](LICENSE) for details.
 
 ## Screenshots
 
-*(Add screenshots here as the game develops!)*
+![Screenshot of the game Desktop](/.github/desktop.png) ![Screenshot of the game Mobile](/.github/mobile.png)
 
 ---
 
