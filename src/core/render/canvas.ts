@@ -1,5 +1,31 @@
 import { Vector2 } from "../../game/models/vector";
 
+// Import images so Vite can bundle them
+import grass_12 from "./../../../src/assets/img/grass_12.png";
+import grass_13 from "./../../../src/assets/img/grass_13.png";
+import grass_14 from "./../../../src/assets/img/grass_14.png";
+import grass_15 from "./../../../src/assets/img/grass_15.png";
+import grass_16 from "./../../../src/assets/img/grass_16.png";
+import dirt_13 from "./../../../src/assets/img/dirt_13.png";
+import dirt_14 from "./../../../src/assets/img/dirt_14.png";
+import dirt_15 from "./../../../src/assets/img/dirt_15.png";
+import dirt_16 from "./../../../src/assets/img/dirt_16.png";
+import dirt_17 from "./../../../src/assets/img/dirt_17.png";
+
+// Map image names to imported modules
+const imgs: Record<string, string> = {
+    "grass_12.png": grass_12,
+    "grass_13.png": grass_13,
+    "grass_14.png": grass_14,
+    "grass_15.png": grass_15,
+    "grass_16.png": grass_16,
+    "dirt_13.png": dirt_13,
+    "dirt_14.png": dirt_14,
+    "dirt_15.png": dirt_15,
+    "dirt_16.png": dirt_16,
+    "dirt_17.png": dirt_17,
+};
+
 const sqrt3 = Math.sqrt(3);
 
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("game")!;
@@ -27,23 +53,12 @@ export function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-let imgs = [
-    "./../../../src/assets/img/grass_12.png",
-    "./../../../src/assets/img/grass_13.png",
-    "./../../../src/assets/img/grass_14.png",
-    "./../../../src/assets/img/grass_15.png",
-    "./../../../src/assets/img/grass_16.png",
-    "./../../../src/assets/img/dirt_13.png",
-    "./../../../src/assets/img/dirt_14.png",
-    "./../../../src/assets/img/dirt_15.png",
-    "./../../../src/assets/img/dirt_16.png",
-    "./../../../src/assets/img/dirt_17.png",
-];
-let imgr = [];
-for (let i = 0; i < imgs.length; i++) {
-    let img = new Image();
-    img.src = imgs[i];
-    imgr.push(img);
+// Preload images
+const imgr: Record<string, HTMLImageElement> = {};
+for (const [name, src] of Object.entries(imgs)) {
+    const img = new Image();
+    img.src = src;
+    imgr[name] = img;
 }
 
 export function drawPolygon(
@@ -76,7 +91,8 @@ export function drawText(text: string) {
 }
 
 export function drawImage(point: Vector2, x: number, y: number, img: string) {
-    let imgn = imgr[imgs.indexOf(img)];
+    // img should be the filename, e.g., "grass_12.png"
+    const imgn = imgr[img];
     if (!imgn) return;
     ctx.drawImage(imgn, point.x - (sqrt3 * x) / 2, point.y - (2 * y) / 2, sqrt3 * x, 2 * y);
 }

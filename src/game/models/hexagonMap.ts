@@ -8,16 +8,16 @@ import WoodRecipe from "./recipes/wood";
 import { Vector2, Vector2Attributes } from "./vector";
 
 let imgs = [
-    "./../../../src/assets/img/grass_12.png",
-    "./../../../src/assets/img/grass_13.png",
-    "./../../../src/assets/img/grass_14.png",
-    "./../../../src/assets/img/grass_15.png",
-    "./../../../src/assets/img/grass_16.png",
-    "./../../../src/assets/img/dirt_13.png",
-    "./../../../src/assets/img/dirt_14.png",
-    "./../../../src/assets/img/dirt_15.png",
-    "./../../../src/assets/img/dirt_16.png",
-    "./../../../src/assets/img/dirt_17.png",
+    "grass_12.png",
+    "grass_13.png",
+    "grass_14.png",
+    "grass_15.png",
+    "grass_16.png",
+    "dirt_13.png",
+    "dirt_14.png",
+    "dirt_15.png",
+    "dirt_16.png",
+    "dirt_17.png",
 ];
 
 export class HexagonMap {

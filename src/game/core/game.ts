@@ -1,4 +1,4 @@
-import { loadObject, saveObject } from "../../core/save";
+import { saveObject } from "../../core/save";
 import { getSetting, loadSettings } from "../../core/settings";
 import { Building } from "../models/building";
 import Hex from "../models/hex";
@@ -121,9 +121,7 @@ export default class Game {
         saveObject("save", save);
     }
 
-    public async load() {
-        let save = loadObject("save");
-    }
+    public async load() {}
 
     public zoom(factor: Vector2) {
         let hexAtCenter = this.hexMap.pixelToHex(this.layout, this.layout.center);
@@ -149,7 +147,7 @@ export default class Game {
         this.tapedHex.isHighlighted = true;
     }
 
-    public async tapUp(position: Vector2 | Vector2Attributes | undefined) {
+    public async tapUp(_position: Vector2 | Vector2Attributes | undefined) {
         this.tap = 0;
         if (!this.tapedHex) return;
         this.highlightedHex = this.tapedHex;
@@ -173,5 +171,5 @@ export default class Game {
         this.tapedHex = undefined;
     }
 
-    public debug(position: Vector2 | Vector2Attributes | undefined) {}
+    public debug() {}
 }
