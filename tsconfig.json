@@ -13,7 +13,17 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noImplicitReturns": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "baseUrl": ".",
+        "paths": {
+            "@assets/*": ["src/assets/*"],
+            "@core/*": ["src/core/*"],
+            "@utils/*": ["src/core/utils/*"],
+            "@render/*": ["src/core/render/*"],
+            "@game/*": ["src/game/*"],
+            "@models/*": ["src/game/models/*"],
+            "@gamecore/*": ["src/game/core/*"]
+        }
     },
     "include": ["src"]
 }

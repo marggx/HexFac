@@ -1,4 +1,4 @@
 import "./main.css";
-import Game from "./game/core/game";
+import Game from "@gamecore/game";
 
 addEventListener("load", () => new Game());

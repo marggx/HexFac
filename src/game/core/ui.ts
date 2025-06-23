@@ -1,5 +1,5 @@
 import { downArrow, upArrow } from "../../core/render/html";
-import { floorToDigit, isPositive, roundToDigit } from "../../core/utils/numberUtils";
+import { floorToDigit, isPositive, roundToDigit } from "@utils/numberUtils";
 import { Item } from "../models/item";
 
 let initialized: boolean = false;

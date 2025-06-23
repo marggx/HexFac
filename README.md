@@ -183,6 +183,7 @@ See [LICENSE](LICENSE) for details.
 - [ ] Add more building types and recipes
 - [ ] Expand UI and add tooltips
 - [ ] Add save/load UI
+- [ ] Create a testable first release
 - [ ] Improve modding API and documentation
 - [ ] Multiplayer support (stretch goal)
 

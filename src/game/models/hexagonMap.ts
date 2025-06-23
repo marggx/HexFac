@@ -1,24 +1,8 @@
-import alea from "alea";
-import { createNoise2D } from "simplex-noise";
 import Layout from "../core/layout";
-import { drawImage, drawPolygon } from "./../../core/render/canvas";
+import { drawImage, drawPolygon } from "@render/canvas";
 import { Building } from "./building";
 import Hex, { HexCoordinates } from "./hex";
-import WoodRecipe from "./recipes/wood";
 import { Vector2, Vector2Attributes } from "./vector";
-
-let imgs = [
-    "grass_12.png",
-    "grass_13.png",
-    "grass_14.png",
-    "grass_15.png",
-    "grass_16.png",
-    "dirt_13.png",
-    "dirt_14.png",
-    "dirt_15.png",
-    "dirt_16.png",
-    "dirt_17.png",
-];
 
 export class HexagonMap {
     private hexagons: Map<string, Building> = new Map();
@@ -45,21 +29,9 @@ export class HexagonMap {
     private hexPositionCache: Map<string, [Vector2[], Vector2]> = new Map();
     private hexRingCache: Map<string, Hex[]> = new Map();
 
-    constructor(radius: number, seed: string = "HexFactory") {
+    constructor(seed: string = "HexFactory", hexagons: Map<string, Building>) {
         this.seed = seed;
-        let prng = alea(this.seed);
-        let noise2D = createNoise2D(prng);
-        for (let q = -radius; q <= radius; q++) {
-            const r1 = Math.max(-radius, -q - radius);
-            const r2 = Math.min(radius, -q + radius);
-            for (let r = r1; r <= r2; r++) {
-                let imgn = imgs[Math.floor(Math.abs(noise2D(-q, r)) * 10)];
-                this.hexagons.set(
-                    q + "_" + r + "_" + (-q - r),
-                    new Building({ q: q, r: r, s: -q - r }, imgn, undefined, 1, 1, true, new WoodRecipe())
-                );
-            }
-        }
+        this.hexagons = hexagons;
     }
 
     private getCachedHexPosition(hex: Hex, layout: Layout): [Vector2[], Vector2] {
@@ -92,7 +64,7 @@ export class HexagonMap {
             let [polygonCorners, hexPixel] = this.getCachedHexPosition(hex, layout);
             if (!this.isHexInViewport(layout, hex, polygonCorners)) return;
             drawnHexagons++;
-            drawImage(hexPixel, layout.size.x, layout.size.y, hex.type);
+            drawImage(hexPixel, layout.size.x, layout.size.y, hex.image);
             drawPolygon(polygonCorners, null, "darkgray", 1);
         });
 

@@ -1,11 +1,12 @@
-import { saveObject } from "../../core/save";
-import { getSetting, loadSettings } from "../../core/settings";
-import { Building } from "../models/building";
-import Hex from "../models/hex";
-import HexagonMap from "../models/hexagonMap";
-import { Vector2, Vector2Attributes } from "../models/vector";
-import { clearCanvas, drawLines, drawPolygon, resizeCanvas } from "./../../core/render/canvas";
-import { initialize } from "./../../game/core/events";
+import generateMap from "@models/mapGenerator";
+import { saveObject } from "@core/save";
+import { getSetting, loadSettings } from "@core/settings";
+import { Building } from "@models/building";
+import Hex from "@models/hex";
+import HexagonMap from "@models/hexagonMap";
+import { Vector2, Vector2Attributes } from "@models/vector";
+import { clearCanvas, drawLines, drawPolygon, resizeCanvas } from "@render/canvas";
+import { initialize } from "@gamecore/events";
 import Layout, { orientation } from "./layout";
 import LoadingScreen from "./loadingScreen";
 import { setStorageDisplayFromItemMap, uiInitialize, updateStorageDispaly } from "./ui";
@@ -21,7 +22,7 @@ export default class Game {
     public canvas: HTMLCanvasElement = document.querySelector<HTMLCanvasElement>("#game")!;
     public ctx: CanvasRenderingContext2D = this.canvas.getContext("2d")!;
     public layout: Layout;
-    private hexMap = new HexagonMap(15);
+    private hexMap: HexagonMap;
     private FPSOldTimeStamp: number = 0;
     private UPSOldTimeStamp: number = 0;
     private UIPSOldTimeStamp: number = 0;
@@ -46,6 +47,8 @@ export default class Game {
         uiInitialize();
 
         loading.stepLoadingScreen(1, "noise");
+
+        this.hexMap = generateMap();
 
         initialize({ game: this });
 

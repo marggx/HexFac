@@ -1,13 +1,13 @@
 import { floorToDigit } from "../../core/utils/numberUtils";
-import { buildingTypeToImage } from "../const";
 import Hex from "./hex";
 import { Item } from "./item";
 import { Recipe } from "./recipe";
+import { getImage } from "@utils/imgUtils";
 
 export interface BuildingAttributes {
     type: string;
     level: number;
-    image: string[];
+    image: HTMLImageElement;
     range: number;
     conenctToSameType: boolean;
     updateable: boolean;
@@ -21,7 +21,7 @@ export interface BuildingAttributes {
 export class Building extends Hex implements BuildingAttributes {
     type: string;
     level: number;
-    image: [string];
+    image: HTMLImageElement;
     range: number;
     conenctToSameType: boolean;
     updateable: boolean = false;
@@ -37,23 +37,19 @@ export class Building extends Hex implements BuildingAttributes {
     isHighlighted: boolean = false;
 
     constructor(
-        position: { q: number; r: number; s: number },
         type: string,
-        image?: string | [string],
+        position?: { q: number; r: number; s: number },
+        image?: string,
         level?: number,
         range?: number,
         conenctToSameType?: boolean,
         recipe?: Recipe,
-        placableOn?: [string]
+        placableOn?: [string],
+        publicStorage?: Map<string, Item>
     ) {
-        super(position.q, position.r, position.s);
+        super(position?.q ?? 0, position?.r ?? 0, position?.s ?? 0);
         this.type = type;
-        if (typeof image === "string") {
-            this.image = [image];
-        } else {
-            // @ts-ignore
-            this.image = image ?? buildingTypeToImage[type];
-        }
+        this.image = getImage(image ?? "dirt_17");
         this.level = level ?? 1;
         this.range = range ?? 0;
         this.conenctToSameType = conenctToSameType ?? true;
@@ -61,6 +57,9 @@ export class Building extends Hex implements BuildingAttributes {
         this.placableOn = placableOn;
         if (recipe) {
             this.setRecipe(recipe);
+        }
+        if (publicStorage) {
+            this.publicStorage = publicStorage;
         }
     }
 
@@ -106,7 +105,7 @@ export class Building extends Hex implements BuildingAttributes {
             let item = outputs[i];
             let storage = this.publicStorage.get(item.type);
 
-            if (!storage) return; // * INFO this should never happen
+            if (!storage) continue; // * INFO this should never happen
 
             let change = deltaTime * item.value;
             storage.value += change;
@@ -118,7 +117,7 @@ export class Building extends Hex implements BuildingAttributes {
             let item = inputs[i];
             let storage = this.privateStorage.get(item.type);
 
-            if (!storage) return; // * INFO this should never happen
+            if (!storage) continue; // * INFO this should never happen
 
             storage.value -= deltaTime * item.value;
         }
