@@ -1,21 +1,22 @@
 import { Building } from "../building";
 import { HexCoordinates } from "../hex";
 import { Item } from "../item";
-import WoodItem from "../items/wood";
-import WoodRecipe from "../recipes/wood";
+import StoneItem from "../items/stone";
+import StoneRecipe from "../recipes/stone";
 
-export default class Tree extends Building {
+export default class Rock extends Building {
     constructor(postion?: HexCoordinates, level: number = 1, amount: number = 100) {
+        let item = new StoneItem(amount);
         super(
-            "tree",
+            "rock",
             postion,
-            "tree",
+            "rock",
             level,
             1,
             true,
-            new WoodRecipe(),
+            new StoneRecipe(),
             undefined,
-            new Map<string, Item>([["wood", new WoodItem(amount)]])
+            new Map<string, Item>([[item.type, item]])
         );
     }
 }
